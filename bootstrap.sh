@@ -18,7 +18,14 @@ echo "Ansible & Git installed."
 # Clone the homelab repository
 git clone https://github.com/thatsimonsguy/homelab.git /home/oebus/homelab
 
-# Run the initial ansible playbook
-ansible-playbook -i /home/oebus/homelab/ansible/inventory.ini /home/oebus/homelab/ansible/bootstrap_playbook.yml
+# Navigate to the ansible directory
+cd /home/oebus/homelab/ansible
+
+# Prompt for Ansible Vault password
+read -sp "Enter Ansible Vault password: " VAULT_PASS
+echo
+
+# Run the Ansible playbook with the inventory file
+ansible-playbook -i inventory.ini bootstrap_playbook.yml --vault-password-file <(echo "$VAULT_PASS")
 
 echo "Bootstrapping complete."

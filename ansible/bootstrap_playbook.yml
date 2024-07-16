@@ -1,8 +1,47 @@
----
-- name: Hello World!
-  hosts: local
- 
+# ansible/bootstrap_playbook.yml
+- hosts: local
+  become: yes
+  vars_files:
+    - config.yml
+    - secrets.yml
   tasks:
- 
-  - name: Hello World!
-    shell: echo "Hello World! blah blah"
+    - name: Ensure curl is installed
+      apt:
+        name: curl
+        state: present
+
+    - name: Install Docker dependencies
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - software-properties-common
+        state: present
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker APT repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable
+        state: present
+        update_cache: yes
+
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: present
+
+    - name: Install k3s
+      shell: |
+        curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION={{ k3s_version }} sh -
+      args:
+        executable: /bin/bash
+
+    - name: Ensure k3s is running
+      systemd:
+        name: k3s
+        state: started
+        enabled: yes
