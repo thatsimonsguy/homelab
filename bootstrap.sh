@@ -22,7 +22,8 @@ git clone https://github.com/thatsimonsguy/homelab.git /home/oebus/homelab
 cd /home/oebus/homelab/ansible
 
 # Prompt for Ansible Vault password
-read -p "Enter Ansible Vault password: " VAULT_PASS
+read -sp "Enter Ansible Vault password: " VAULT_PASS
+continue
 
 # Run the Ansible playbook with the inventory file
 ansible-playbook -i inventory.ini bootstrap_playbook.yml --vault-password-file <(echo "$VAULT_PASS")
