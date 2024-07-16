@@ -52,3 +52,9 @@
         name: k3s
         state: started
         enabled: yes
+
+    - name: Unset ANSIBLE_VAULT_PASS environment variable
+      shell: |
+        unset ANSIBLE_VAULT_PASS
+      args:
+        executable: /bin/bash
