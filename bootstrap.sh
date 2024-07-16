@@ -16,7 +16,7 @@ ansible --version
 echo "Initial bootstrap complete. Ansible installed."
 
 # Run Ansible playbook from a remote location (e.g., GitHub)
-#curl -L https://raw.githubusercontent.com/yourusername/yourrepository/main/setup.yml -o /tmp/setup.yml
-#ansible-playbook -i "localhost," -c local /tmp/setup.yml
+curl -L https://raw.githubusercontent.com/thatsimonsguy/homelab/main/Ansible/bootstrap_playbook.yml -o /tmp/setup.yml
+ansible-playbook -i "localhost," -c local /tmp/setup.yml
 
 echo "Server configuration complete."

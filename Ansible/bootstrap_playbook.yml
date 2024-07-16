@@ -1,1 +1,8 @@
-#todo
+---
+- name: Hello World!
+  hosts: all
+ 
+  tasks:
+ 
+  - name: Hello World!
+    shell: echo "Hello World!"
