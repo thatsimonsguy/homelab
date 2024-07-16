@@ -23,6 +23,10 @@
         url: https://download.docker.com/linux/ubuntu/gpg
         state: present
 
+    - name: Print Ubuntu release
+      debug:
+        msg: "Ubuntu release: {{ ubuntu_release }}"
+
     - name: Add Docker APT repository
       apt_repository:
         repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ubuntu_release }} stable"
