@@ -23,7 +23,7 @@ cd /home/oebus/homelab/ansible
 
 # Prompt for Ansible Vault password
 echo -n "Enter Ansible Vault password: "
-read -s VAULT_PASS
+read VAULT_PASS
 echo
 
 # Run the Ansible playbook with the inventory file
