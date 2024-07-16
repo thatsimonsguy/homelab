@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Check if VAULT_PASS environment variable is set
-if [ -z "$ANSIBLE_VAULT_PASS" ]; then
-  echo "ANSIBLE_VAULT_PASS environment variable is not set. Exiting..."
+# Check if Vault password is provided as an argument
+if [ -z "$1" ]; then
+  echo "Vault password is not provided. Exiting..."
   exit 1
 fi
 
@@ -32,6 +32,6 @@ git clone https://github.com/thatsimonsguy/homelab.git /home/oebus/homelab
 cd /home/oebus/homelab/ansible
 
 # Run the Ansible playbook with the inventory file
-ansible-playbook -i inventory.ini bootstrap_playbook.yml --vault-password-file <(echo "$ANSIBLE_VAULT_PASS") --extra-vars "ubuntu_release=$UBUNTU_RELEASE"
+ansible-playbook -i inventory.ini bootstrap_playbook.yml --vault-password-file <(echo "$1") --extra-vars "ubuntu_release=$UBUNTU_RELEASE"
 
 echo "Bootstrapping complete."
