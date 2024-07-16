@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Prompt for Ansible Vault password
+read -sp "Enter Ansible Vault password: " VAULT_PASS
+
 # Update the system
 sudo apt update && sudo apt upgrade -y
 
@@ -20,10 +23,6 @@ git clone https://github.com/thatsimonsguy/homelab.git /home/oebus/homelab
 
 # Navigate to the ansible directory
 cd /home/oebus/homelab/ansible
-
-# Prompt for Ansible Vault password
-read -sp "Enter Ansible Vault password: " VAULT_PASS
-continue
 
 # Run the Ansible playbook with the inventory file
 ansible-playbook -i inventory.ini bootstrap_playbook.yml --vault-password-file <(echo "$VAULT_PASS")
