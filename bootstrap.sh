@@ -32,7 +32,7 @@ git clone https://github.com/thatsimonsguy/homelab.git /home/oebus/homelab
 cd /home/oebus/homelab/ansible
 
 # Run the Ansible playbook with the inventory file
-ansible-playbook -i inventory.ini bootstrap_playbook.yml --vault-password-file <(echo "$ANSIBLE_VAULT_PASS")
+ansible-playbook -i inventory.ini bootstrap_playbook.yml --vault-password-file <(echo "$ANSIBLE_VAULT_PASS") --extra-vars "ubuntu_release=$UBUNTU_RELEASE"
 
 # Unset the ANSIBLE_VAULT_PASS environment variable for security
 unset ANSIBLE_VAULT_PASS
