@@ -25,7 +25,7 @@
 
     - name: Add Docker APT repository
       apt_repository:
-        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ubuntu_release }} stable"
         state: present
         update_cache: yes
 
@@ -36,7 +36,7 @@
 
     - name: Install k3s
       shell: |
-        curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION={{ k3s_version }} sh -
+        curl -sfL https://get.k3s.io | sh -
       args:
         executable: /bin/bash
 

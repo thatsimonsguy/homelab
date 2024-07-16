@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Check if VAULT_PASS environment variable is set
+if [ -z "$ANSIBLE_VAULT_PASS" ]; then
+  echo "ANSIBLE_VAULT_PASS environment variable is not set. Exiting..."
+  exit 1
+fi
+
 # Update the system
 sudo apt update && sudo apt upgrade -y
 
@@ -15,6 +21,10 @@ ansible --version
 
 echo "Ansible & Git installed."
 
+# Detect the Ubuntu release codename
+UBUNTU_RELEASE=$(lsb_release -cs)
+export UBUNTU_RELEASE
+
 # Clone the homelab repository
 git clone https://github.com/thatsimonsguy/homelab.git /home/oebus/homelab
 
@@ -23,5 +33,8 @@ cd /home/oebus/homelab/ansible
 
 # Run the Ansible playbook with the inventory file
 ansible-playbook -i inventory.ini bootstrap_playbook.yml --vault-password-file <(echo "$ANSIBLE_VAULT_PASS")
+
+# Unset the ANSIBLE_VAULT_PASS environment variable for security
+unset ANSIBLE_VAULT_PASS
 
 echo "Bootstrapping complete."
