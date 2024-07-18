@@ -4,6 +4,8 @@
   vars_files:
     - config.yml
     - secrets.yml
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
   tasks:
     - name: Create the argocd namespace
       kubernetes.core.k8s:
