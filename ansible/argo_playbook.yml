@@ -53,7 +53,7 @@
 
     - name: Forward the Argo CD server port
       ansible.builtin.shell:
-        cmd: "nohup kubectl port-forward svc/argocd-server -n argocd 8080:443 > /dev/null 2>&1 &"
+        cmd: "kubectl port-forward svc/argocd-server -n argocd 8080:443 > /dev/null 2>&1 &"
 
     - name: Get initial Argo CD admin password
       kubernetes.core.k8s_info:
