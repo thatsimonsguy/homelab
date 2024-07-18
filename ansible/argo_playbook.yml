@@ -58,4 +58,6 @@
       changed_when: False
 
     - name: Login to ArgoCD
-      ansible.builtin.command: argocd login <argocd-server> --username admin --password {{ argocd_admin_password.s
+      ansible.builtin.command: argocd login <argocd-server> --username admin --password {{ argocd_admin_password.stdout }} --insecure
+      register: argocd_login
+      changed_when: False
