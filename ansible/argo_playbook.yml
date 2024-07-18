@@ -49,7 +49,7 @@
       register: result
       until: result.resources | selectattr('status.phase', 'equalto', 'Running') | list | length > 0
       retries: 5
-      delay: 30
+      delay: 10
 
     - name: Forward the Argo CD server port
       ansible.builtin.shell:
