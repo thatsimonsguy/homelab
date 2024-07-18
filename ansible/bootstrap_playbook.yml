@@ -99,7 +99,7 @@
       delay: 30
 
     - name: Forward the Argo CD server port
-      community.general.shell:
+      ansible.builtin.shell:
         cmd: "kubectl port-forward svc/argocd-server -n argocd 8080:443 &"
         async: 1
         poll: 0
