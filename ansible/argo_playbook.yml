@@ -6,6 +6,11 @@
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
   tasks:
+    - name: Ensure kubectl is installed
+      apt:
+        name: kubectl
+        state: present
+
     - name: Create the argocd namespace
       kubernetes.core.k8s:
         state: present
@@ -15,30 +20,24 @@
           metadata:
             name: argocd
 
-    - name: Install Argo CD
-      kubernetes.core.k8s:
-        state: present
-        definition:
-          apiVersion: apps/v1
-          kind: Deployment
-          metadata:
-            name: argocd-server
-            namespace: argocd
-          spec:
-            replicas: 1
-            selector:
-              matchLabels:
-                app: argocd-server
-            template:
-              metadata:
-                labels:
-                  app: argocd-server
-              spec:
-                containers:
-                  - name: argocd-server
-                    image: argoproj/argocd:latest
-                    ports:
-                      - containerPort: 8080
+    - name: Apply Argo CD install manifests
+      command: kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+    - name: Patch Argo CD server deployment to set KUBERNETES_MASTER env variable
+      command: kubectl set env deployment/argocd-server -n argocd KUBERNETES_MASTER=https://kubernetes.default.svc
+      ignore_errors: yes
+
+    - name: Patch Argo CD repo server deployment to set KUBERNETES_MASTER env variable
+      command: kubectl set env deployment/argocd-repo-server -n argocd KUBERNETES_MASTER=https://kubernetes.default.svc
+      ignore_errors: yes
+
+    - name: Patch Argo CD application controller to set KUBERNETES_MASTER env variable
+      command: kubectl set env deployment/argocd-application-controller -n argocd KUBERNETES_MASTER=https://kubernetes.default.svc
+      ignore_errors: yes
+
+    - name: Patch Argo CD Dex server deployment to set KUBERNETES_MASTER env variable
+      command: kubectl set env deployment/argocd-dex-server -n argocd KUBERNETES_MASTER=https://kubernetes.default.svc
+      ignore_errors: yes
 
     - name: Wait for Argo CD pods to be ready
       kubernetes.core.k8s_info:
@@ -48,8 +47,8 @@
           - app=argocd-server
       register: result
       until: result.resources | selectattr('status.phase', 'equalto', 'Running') | list | length > 0
-      retries: 5
-      delay: 10
+      retries: 10
+      delay: 5
 
     - name: Forward the Argo CD server port
       ansible.builtin.shell:
