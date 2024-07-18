@@ -21,6 +21,10 @@ ansible --version
 
 echo "Ansible & Git installed."
 
+# Install yq for YAML processing
+sudo apt install -y python3-pip
+pip3 install yq
+
 # Detect the Ubuntu release codename
 UBUNTU_RELEASE=$(lsb_release -cs)
 export UBUNTU_RELEASE
@@ -31,7 +35,15 @@ git clone https://github.com/thatsimonsguy/homelab.git /home/oebus/homelab
 # Navigate to the ansible directory
 cd /home/oebus/homelab/ansible
 
+# Check if ubuntu_release exists in config.yml and add it if not
+if ! yq eval '.ubuntu_release' config.yml &>/dev/null; then
+  yq eval --inplace ".ubuntu_release = \"$UBUNTU_RELEASE\"" config.yml
+  echo "Added ubuntu_release to config.yml"
+else
+  echo "ubuntu_release already exists in config.yml"
+fi
+
 # Run the Ansible playbook with the inventory file
-ansible-playbook -i inventory.ini bootstrap_playbook.yml --vault-password-file <(echo "$1") --extra-vars "ubuntu_release=$UBUNTU_RELEASE"
+ansible-playbook -i inventory.ini bootstrap_playbook.yml --vault-password-file <(echo "$1")
 
 echo "Bootstrapping complete."

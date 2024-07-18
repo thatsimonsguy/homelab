@@ -1,6 +1,8 @@
 # ansible/docker_playbook.yml
 - hosts: local
   become: yes
+  vars_files:
+    - config.yml
   tasks:
     - name: Ensure curl is installed
       apt:
