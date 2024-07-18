@@ -1,70 +1,65 @@
-# ansible/argo_playbook.yml
-- hosts: local
+---
+- name: Install ArgoCD on K3s
+  hosts: all
   become: yes
-  vars_files:
-    - config.yml
-  environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"
   tasks:
-    - name: Ensure kubectl is installed
-      apt:
-        name: kubectl
-        state: present
 
-    - name: Create the argocd namespace
-      kubernetes.core.k8s:
-        state: present
-        definition:
-          apiVersion: v1
-          kind: Namespace
-          metadata:
-            name: argocd
+    - name: Install kubectl
+      ansible.builtin.command: curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+      args:
+        creates: /usr/local/bin/kubectl
+      register: download_kubectl
+      changed_when: "'kubectl' in download_kubectl.stdout"
 
-    - name: Apply Argo CD install manifests
-      command: kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+    - name: Install kubectl binary
+      ansible.builtin.command: install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+      when: download_kubectl.changed
 
-    - name: Patch Argo CD server deployment to set KUBERNETES_MASTER env variable
-      command: kubectl set env deployment/argocd-server -n argocd KUBERNETES_MASTER=https://kubernetes.default.svc
-      ignore_errors: yes
+    - name: Verify kubectl installation
+      ansible.builtin.command: kubectl version --client
+      register: kubectl_version
+      changed_when: False
 
-    - name: Patch Argo CD repo server deployment to set KUBERNETES_MASTER env variable
-      command: kubectl set env deployment/argocd-repo-server -n argocd KUBERNETES_MASTER=https://kubernetes.default.svc
-      ignore_errors: yes
+    - name: Apply ArgoCD manifest
+      ansible.builtin.command: kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+      register: argocd_install
+      changed_when: "'namespace/argocd created' in argocd_install.stdout or 'unchanged' in argocd_install.stdout"
 
-    - name: Patch Argo CD application controller to set KUBERNETES_MASTER env variable
-      command: kubectl set env deployment/argocd-application-controller -n argocd KUBERNETES_MASTER=https://kubernetes.default.svc
-      ignore_errors: yes
-
-    - name: Patch Argo CD Dex server deployment to set KUBERNETES_MASTER env variable
-      command: kubectl set env deployment/argocd-dex-server -n argocd KUBERNETES_MASTER=https://kubernetes.default.svc
-      ignore_errors: yes
-
-    - name: Wait for Argo CD pods to be ready
-      kubernetes.core.k8s_info:
-        kind: Pod
-        namespace: argocd
-        label_selectors:
-          - app=argocd-server
-      register: result
-      until: result.resources | selectattr('status.phase', 'equalto', 'Running') | list | length > 0
+    - name: Wait for ArgoCD server to be available
+      ansible.builtin.command: kubectl wait --for=condition=available --timeout=600s deployment/argocd-server -n argocd
+      register: argocd_server_wait
+      until: argocd_server_wait.rc == 0
       retries: 10
-      delay: 5
+      delay: 30
 
-    - name: Forward the Argo CD server port
-      ansible.builtin.shell:
-        cmd: "kubectl port-forward svc/argocd-server -n argocd 8080:443 > /dev/null 2>&1 &"
+    - name: Get the initial ArgoCD admin password
+      ansible.builtin.command: kubectl get pods -n argocd
+      register: argocd_pods
+      changed_when: False
 
-    - name: Get initial Argo CD admin password
-      kubernetes.core.k8s_info:
-        kind: Secret
-        namespace: argocd
-        name: argocd-initial-admin-secret
-      register: argocd_secret
+    - name: Retrieve ArgoCD initial admin password
+      ansible.builtin.command: kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d
+      register: argocd_admin_password
+      changed_when: False
 
-    - name: Decode initial admin password
-      set_fact:
-        argocd_password: "{{ argocd_secret.resources[0].data.password | b64decode }}"
+    - name: Display ArgoCD initial admin password
+      ansible.builtin.debug:
+        msg: "The ArgoCD initial admin password is {{ argocd_admin_password.stdout }}"
 
-    - name: Display initial Argo CD admin password
-      debug:
-        msg: "Initial Argo CD admin password: {{ argocd_password }}"
+    - name: Install ArgoCD CLI
+      ansible.builtin.get_url:
+        url: https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+        dest: /usr/local/bin/argocd
+        mode: '0755'
+      register: download_argocd
+      changed_when: download_argocd is changed
+
+    - name: Verify ArgoCD CLI installation
+      ansible.builtin.command: argocd version
+      register: argocd_cli_version
+      changed_when: False
+
+    - name: Login to ArgoCD
+      ansible.builtin.command: argocd login <argocd-server> --username admin --password {{ argocd_admin_password.stdout }} --insecure
+      register: argocd_login
+      changed_when: False
