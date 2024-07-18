@@ -3,6 +3,8 @@
   become: yes
   vars_files:
     - config.yml
+  environment:
+      KUBECONFIG: "{{ kubeconfig_path }}"
   tasks:
     - name: Ensure Python 3 and pip are installed
       apt:
