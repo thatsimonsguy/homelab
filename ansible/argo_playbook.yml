@@ -4,21 +4,24 @@
   become: yes
   tasks:
 
-    - name: Install kubectl
-      ansible.builtin.command: curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-      args:
-        creates: /usr/local/bin/kubectl
+    - name: Download kubectl binary
+      ansible.builtin.get_url:
+        url: "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        dest: /usr/local/bin/kubectl
+        mode: '0755'
       register: download_kubectl
-      changed_when: "'kubectl' in download_kubectl.stdout"
-
-    - name: Install kubectl binary
-      ansible.builtin.command: install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-      when: download_kubectl.changed
+      changed_when: download_kubectl is changed
 
     - name: Verify kubectl installation
       ansible.builtin.command: kubectl version --client
       register: kubectl_version
       changed_when: False
+
+    - name: Create ArgoCD namespace
+      ansible.builtin.command: kubectl create namespace argocd
+      register: argocd_namespace
+      ignore_errors: true
+      changed_when: "'namespace/argocd created' in argocd_namespace.stdout"
 
     - name: Apply ArgoCD manifest
       ansible.builtin.command: kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
@@ -33,11 +36,6 @@
       delay: 30
 
     - name: Get the initial ArgoCD admin password
-      ansible.builtin.command: kubectl get pods -n argocd
-      register: argocd_pods
-      changed_when: False
-
-    - name: Retrieve ArgoCD initial admin password
       ansible.builtin.command: kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d
       register: argocd_admin_password
       changed_when: False
@@ -60,6 +58,4 @@
       changed_when: False
 
     - name: Login to ArgoCD
-      ansible.builtin.command: argocd login <argocd-server> --username admin --password {{ argocd_admin_password.stdout }} --insecure
-      register: argocd_login
-      changed_when: False
+      ansible.builtin.command: argocd login <argocd-server> --username admin --password {{ argocd_admin_password.s
