@@ -1,4 +1,4 @@
 # ansible/config.yml
 
-kubeconfig_path: /home/oebus/.kube/config
+kubeconfig_path: /etc/rancher/k3s/k3s.yaml
 k3s_install_url: https://get.k3s.io
