@@ -1,10 +1,5 @@
 # ansible/bootstrap_playbook.yml
-- hosts: local
-  become: yes
-  vars_files:
-    - config.yml
-    - secrets.yml
-  tasks:
-    - import_playbook: docker_playbook.yml
-    - import_playbook: k3s_playbook.yml
-    - import_playbook: argo_playbook.yml
+
+- import_playbook: docker_playbook.yml
+- import_playbook: k3s_playbook.yml
+- import_playbook: argo_playbook.yml
