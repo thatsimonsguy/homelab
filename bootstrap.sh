@@ -21,10 +21,6 @@ ansible --version
 
 echo "Ansible & Git installed."
 
-# Install yq for YAML processing
-sudo apt install -y python3-pip
-pip3 install yq
-
 # Detect the Ubuntu release codename
 UBUNTU_RELEASE=$(lsb_release -cs)
 export UBUNTU_RELEASE
@@ -34,6 +30,12 @@ git clone https://github.com/thatsimonsguy/homelab.git /home/oebus/homelab
 
 # Navigate to the ansible directory
 cd /home/oebus/homelab/ansible
+
+# Install yq for YAML processing (Mike Farah version)
+sudo wget https://github.com/mikefarah/yq/releases/download/v4.9.8/yq_linux_amd64 -O /usr/local/bin/yq && sudo chmod +x /usr/local/bin/yq
+
+# Add yq to the PATH
+export PATH=$PATH:/usr/local/bin
 
 # Check if ubuntu_release exists in config.yml and add it if not
 if ! yq eval '.ubuntu_release' config.yml &>/dev/null; then
