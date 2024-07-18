@@ -3,7 +3,6 @@
   become: yes
   vars_files:
     - config.yml
-    - secrets.yml
   tasks:
     - name: Ensure Python 3 and pip are installed
       apt:
@@ -18,7 +17,7 @@
         executable: pip3
     - name: Install k3s
       shell: |
-        curl -sfL https://get.k3s.io | sh -
+        curl -sfL {{ k3s_install_url }} | sh -
       args:
         executable: /bin/bash
 
