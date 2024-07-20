@@ -36,6 +36,15 @@
              {"op": "add", "path": "/metadata/annotations/meta.helm.sh~1release-namespace", "value": "kube-system"}]'
       when: coredns_configmap.rc == 0
 
+    - name: Patch existing CoreDNS Deployment if it exists
+      command: >
+        kubectl patch deployment coredns -n kube-system
+        --type=json
+        -p='[{"op": "add", "path": "/metadata/labels/app.kubernetes.io~1managed-by", "value": "Helm"},
+             {"op": "add", "path": "/metadata/annotations/meta.helm.sh~1release-name", "value": "coredns"},
+             {"op": "add", "path": "/metadata/annotations/meta.helm.sh~1release-namespace", "value": "kube-system"}]'
+      when: coredns_deployment.rc == 0
+
     - name: Install or upgrade CoreDNS
       command: helm upgrade --install coredns coredns/coredns --namespace kube-system --create-namespace
 
