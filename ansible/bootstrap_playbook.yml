@@ -1,6 +1,0 @@
-# ansible/bootstrap_playbook.yml
-
-- import_playbook: docker_playbook.yml
-- import_playbook: k3s_playbook.yml
-- import_playbook: helm_playbook.yml
-- import_playbook: coredns.yml

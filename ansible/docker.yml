@@ -1,4 +1,4 @@
-# ansible/docker_playbook.yml
+# ansible/docker.yml
 - hosts: local
   become: yes
   vars_files:

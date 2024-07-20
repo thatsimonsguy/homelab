@@ -1,4 +1,4 @@
-# ansible/k3s_playbook.yml
+# ansible/k3s.yml
 - hosts: local
   become: yes
   vars_files:

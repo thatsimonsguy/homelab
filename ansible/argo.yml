@@ -1,0 +1,50 @@
+# ansible/argo.yml
+---
+- hosts: local
+  become: yes
+  vars:
+    argocd_namespace: argocd
+    argocd_install_url: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+    kubeconfig_path: /etc/rancher/k3s/k3s.yaml
+
+  tasks:
+    - name: Create Argo CD namespace
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Namespace
+        name: "{{ argocd_namespace }}"
+      ignore_errors: yes
+
+    - name: Install Argo CD
+      command: kubectl apply -n "{{ argocd_namespace }}" -f "{{ argocd_install_url }}"
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+
+    - name: Download Argo CD CLI
+      get_url:
+        url: "https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64"
+        dest: /usr/local/bin/argocd
+        mode: '0755'
+
+    - name: Set Argo CD API server to LoadBalancer
+      command: kubectl patch svc argocd-server -n "{{ argocd_namespace }}" -p '{"spec": {"type": "LoadBalancer"}}'
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+      ignore_errors: yes
+
+    - name: Port-forward Argo CD server for local access
+      command: kubectl port-forward svc/argocd-server -n "{{ argocd_namespace }}" 8080:443
+      async: 120
+      poll: 0
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+
+    - name: Retrieve initial admin password
+      command: kubectl -n "{{ argocd_namespace }}" get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+      register: initial_admin_password
+      environment:
+        KUBECONFIG: "{{ kubeconfig_path }}"
+
+    - name: Display initial admin password
+      debug:
+        msg: "Initial admin password: {{ initial_admin_password.stdout }}"

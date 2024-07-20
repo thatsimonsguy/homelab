@@ -1,4 +1,4 @@
-# ansible/helm_playbook.yml
+# ansible/helm.yml
 ---
 - name: Install Helm
   hosts: local

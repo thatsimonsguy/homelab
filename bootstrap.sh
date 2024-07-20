@@ -32,6 +32,6 @@ git clone https://github.com/thatsimonsguy/homelab.git /home/oebus/homelab
 cd /home/oebus/homelab/ansible
 
 # Run the Ansible playbook with the inventory file
-ansible-playbook -i inventory.ini bootstrap_playbook.yml --vault-password-file <(echo "$1") --extra-vars "ubuntu_release=$UBUNTU_RELEASE"
+ansible-playbook -i inventory.ini bootstrap.yml --vault-password-file <(echo "$1") --extra-vars "ubuntu_release=$UBUNTU_RELEASE"
 
 echo "Bootstrapping complete."
