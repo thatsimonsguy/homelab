@@ -23,7 +23,7 @@
     - name: Install CoreDNS
       community.kubernetes.helm:
         name: coredns
-        chart: coredns/coredns
+        chart_ref: coredns/coredns
         namespace: kube-system
         create_namespace: yes
 
