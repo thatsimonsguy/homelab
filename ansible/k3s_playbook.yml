@@ -57,5 +57,7 @@
       file:
         src: "{{ kubeconfig_path }}"
         dest: "{{ kubeconfig_target_path }}"
+        owner: "{{ user }}"
+        group: "{{ user }}"
         state: link
         force: yes
