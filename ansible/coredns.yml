@@ -10,18 +10,6 @@
       failed_when: helm_installed.rc != 0
       ignore_errors: yes
 
-    - name: Install ansible-galaxy if not present
-      pip:
-        name: ansible
-        executable: pip3
-        state: present
-
-    - name: Install the community.kubernetes collection
-      ansible.builtin.command:
-        cmd: ansible-galaxy collection install community.kubernetes
-      args:
-        creates: /root/.ansible/collections/ansible_collections/community/kubernetes
-
     - name: Add CoreDNS Helm repository
       command: helm repo add coredns https://coredns.github.io/helm
       register: helm_repo_added
