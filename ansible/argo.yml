@@ -27,7 +27,7 @@
         mode: '0755'
 
     - name: Set Argo CD API server to LoadBalancer
-      command: kubectl patch svc argocd-server -n "{{ argocd_namespace }}" -p '{"spec": {"type": "LoadBalancer"}}'
+      command: kubectl patch svc argocd-server -n "{{ argocd_namespace }}" -p "{\"spec\": {\"type\": \"LoadBalancer\"}}"
       environment:
         KUBECONFIG: "{{ kubeconfig_path }}"
       ignore_errors: yes
