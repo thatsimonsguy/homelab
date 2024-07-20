@@ -22,6 +22,20 @@
       command: helm repo update
       when: helm_repo_added.rc == 0
 
+    - name: Check if CoreDNS ConfigMap exists
+      command: kubectl get configmap coredns -n kube-system
+      register: coredns_configmap
+      ignore_errors: yes
+
+    - name: Patch existing CoreDNS ConfigMap if it exists
+      command: >
+        kubectl patch configmap coredns -n kube-system
+        --type=json
+        -p='[{"op": "add", "path": "/metadata/labels/app.kubernetes.io~1managed-by", "value": "Helm"},
+             {"op": "add", "path": "/metadata/annotations/meta.helm.sh~1release-name", "value": "coredns"},
+             {"op": "add", "path": "/metadata/annotations/meta.helm.sh~1release-namespace", "value": "kube-system"}]'
+      when: coredns_configmap.rc == 0
+
     - name: Install or upgrade CoreDNS
       command: helm upgrade --install coredns coredns/coredns --namespace kube-system --create-namespace
 
