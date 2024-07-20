@@ -36,6 +36,15 @@
              {"op": "add", "path": "/metadata/annotations/meta.helm.sh~1release-namespace", "value": "kube-system"}]'
       when: coredns_configmap.rc == 0
 
+    - name: Check if CoreDNS Deployment exists
+      command: kubectl get deployment coredns -n kube-system
+      register: coredns_deployment
+      ignore_errors: yes
+
+    - name: Ensure coredns_deployment is defined
+      set_fact:
+        coredns_deployment_rc: "{{ coredns_deployment.rc | default(1) }}"
+
     - name: Patch existing CoreDNS Deployment if it exists
       command: >
         kubectl patch deployment coredns -n kube-system
