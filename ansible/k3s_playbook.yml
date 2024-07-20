@@ -41,7 +41,7 @@
         state: absent
       ignore_errors: yes
 
-    - name: Hard link k3s kube config to expected location
+    - name: Hard link k3s kube config to expected location for argo
       file:
         src: "{{ kubeconfig_path }}"
         dest: "{{ kubeconfig_target_path }}"

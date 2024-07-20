@@ -1,0 +1,36 @@
+# ansible/install_coredns.yml
+- hosts: local
+  become: yes
+  vars_files:
+    - config.yml
+  tasks:
+    - name: Ensure Helm is installed
+      command: helm version
+      register: helm_installed
+      failed_when: helm_installed.rc != 0
+      ignore_errors: yes
+
+    - name: Add CoreDNS Helm repository
+      command: helm repo add coredns https://coredns.github.io/helm
+      register: helm_repo_added
+      failed_when: helm_repo_added.rc != 0
+      ignore_errors: yes
+
+    - name: Update Helm repositories
+      command: helm repo update
+      when: helm_repo_added.rc == 0
+
+    - name: Install CoreDNS
+      helm:
+        name: coredns
+        chart: coredns/coredns
+        namespace: kube-system
+        create_namespace: yes
+
+    - name: Verify CoreDNS installation
+      command: kubectl get pods -n kube-system -l app.kubernetes.io/name=coredns
+      register: coredns_installed
+
+    - name: Display CoreDNS installation status
+      debug:
+        msg: "{{ coredns_installed.stdout }}"
