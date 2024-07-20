@@ -3,8 +3,6 @@
   become: yes
   vars_files:
     - config.yml
-  environment:
-    KUBECONFIG: "{{ kubeconfig_path }}"
   tasks:
     - name: Ensure Python 3 and pip are installed
       apt:
@@ -28,3 +26,24 @@
         name: k3s
         state: started
         enabled: yes
+
+    - name: Create .kube directory if it does not exist
+      file:
+        path: "{{ kubeconfig_target_dir }}"
+        state: directory
+        owner: {{ user }}
+        group: {{ user }}
+        mode: '0755'
+
+    - name: Remove existing kube config if it exists
+      file:
+        path: "{{ kubeconfig_target_path }}"
+        state: absent
+      ignore_errors: yes
+
+    - name: Hard link k3s kube config to expected location
+      file:
+        src: "{{ kubeconfig_path }}"
+        dest: "{{ kubeconfig_target_path }}"
+        state: link
+        force: yes
