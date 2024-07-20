@@ -21,7 +21,7 @@
       when: helm_repo_added.rc == 0
 
     - name: Install CoreDNS
-      helm:
+      community.kubernetes.helm:
         name: coredns
         chart: coredns/coredns
         namespace: kube-system

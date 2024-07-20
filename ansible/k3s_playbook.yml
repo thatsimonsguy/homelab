@@ -21,18 +21,6 @@
       args:
         executable: /bin/bash
 
-    - name: Install ansible-galaxy if not present
-      pip:
-        name: ansible
-        executable: pip3
-        state: present
-
-    - name: Install the community.kubernetes collection
-      ansible.builtin.command:
-        cmd: ansible-galaxy collection install community.kubernetes
-      args:
-        creates: /root/.ansible/collections/ansible_collections/community/kubernetes
-
     - name: Ensure k3s is running
       systemd:
         name: k3s
