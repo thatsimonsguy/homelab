@@ -21,11 +21,7 @@
       when: helm_repo_added.rc == 0
 
     - name: Install CoreDNS
-      community.kubernetes.helm:
-        name: coredns
-        chart_ref: coredns/coredns
-        namespace: kube-system
-        create_namespace: yes
+      command: helm install coredns coredns/coredns --namespace kube-system --create-namespace
 
     - name: Verify CoreDNS installation
       command: kubectl get pods -n kube-system -l app.kubernetes.io/name=coredns
