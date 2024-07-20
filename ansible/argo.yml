@@ -42,7 +42,7 @@
       environment: "{{ kubectl_env }}"
 
     - name: Retrieve initial admin password
-      command: kubectl -n "{{ argocd_namespace }}" get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+      shell: kubectl -n "{{ argocd_namespace }}" get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
       register: initial_admin_password
       environment: "{{ kubectl_env }}"
 
