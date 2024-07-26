@@ -2,7 +2,7 @@
 - hosts: local
   become: yes
   vars_files:
-    - config.yml
+    - ../config.yml
   environment:
     KUBECONFIG: "{{ kubeconfig_path }}"
   tasks:
