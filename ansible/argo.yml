@@ -52,3 +52,7 @@
     - name: Display NodePort
       debug:
         msg: "Argo CD UI NodePort: {{ nodeport.stdout }}"
+
+    - name: Apply Argo CD application manifest
+      command: kubectl apply -f "{{ apps_yaml_path }}"
+      environment: "{{ kubectl_env }}"
