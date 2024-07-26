@@ -10,19 +10,14 @@ service:
 podLabels:
   k8s-app: kube-dns
 
-# Ensure the selector matches the labels
-podAnnotations: {}
-podSecurityContext: {}
-securityContext: {}
-affinity: {}
-nodeSelector: {}
-tolerations: []
-
-extraArgs: []
-extraEnvs: []
-resources: {}
-
-# Ensure metadata labels are set
 metadata:
   labels:
     k8s-app: kube-dns
+
+# Ensure the selector matches the labels
+selector:
+  matchLabels:
+    k8s-app: kube-dns
+
+# To support legacy deployments using CoreDNS with the "k8s-app: kube-dns" label selectors
+k8sAppLabelOverride: "kube-dns"
