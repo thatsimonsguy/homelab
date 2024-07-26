@@ -1,5 +1,6 @@
 # ansible/bootstrap.yml
 
+- import_playbook: network_storage.yml
 - import_playbook: docker.yml
 - import_playbook: k3s.yml
 - import_playbook: helm.yml

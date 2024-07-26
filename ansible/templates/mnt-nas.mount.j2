@@ -1,0 +1,12 @@
+[Unit]
+Description=Mount NAS at boot
+
+[Mount]
+What=//{{ nas_server }}/{{ nas_share }}
+Where={{ mount_point }}
+Options=_netdev,user={{ nas_user }},pass={{ nas_pass }},uid=1000,gid=1000,iocharset=utf8,rw
+Type=cifs
+TimeoutSec=30
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,28 @@
+# ansible/network_storage.yml
+---
+- hosts: all
+  become: yes
+  vars_files:
+    - secrets.yml
+  tasks:
+    - name: Ensure mount point directory exists
+      file:
+        path: "{{ mount_point }}"
+        state: directory
+
+    - name: Create systemd mount unit file for NAS
+      template:
+        src: templates/mnt-nas.mount.j2
+        dest: /etc/systemd/system/mnt-nas.mount
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Reload systemd
+      command: systemctl daemon-reload
+
+    - name: Enable and start NAS mount
+      systemd:
+        name: mnt-nas.mount
+        enabled: yes
+        state: started
