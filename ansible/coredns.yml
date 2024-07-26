@@ -58,10 +58,11 @@
       command: >
         kubectl patch deployment coredns -n kube-system
         --type=json
-        -p='[{"op": "add", "path": "/spec/template/metadata/labels/k8s-app", "value": "kube-dns"}]'
+        -p='[{"op": "add", "path": "/spec/selector/matchLabels/k8s-app", "value": "kube-dns"},
+             {"op": "add", "path": "/spec/template/metadata/labels/k8s-app", "value": "kube-dns"}]'
 
     - name: Verify CoreDNS deployment
-      command: kubectl get deployment coredns -n kube-system
+      command: kubectl get deployment coredns -n kube-system --show-labels
       register: coredns_deployment_status
 
     - name: Display CoreDNS deployment status
@@ -69,17 +70,9 @@
         msg: "{{ coredns_deployment_status.stdout }}"
 
     - name: Verify CoreDNS pods
-      command: kubectl get pods -n kube-system -l app.kubernetes.io/name=coredns
+      command: kubectl get pods -n kube-system -l k8s-app=kube-dns
       register: coredns_pods_status
 
     - name: Display CoreDNS pods status
       debug:
         msg: "{{ coredns_pods_status.stdout }}"
-
-    - name: Check for events in kube-system namespace
-      command: kubectl get events -n kube-system
-      register: kubesystem_events
-
-    - name: Display events in kube-system namespace
-      debug:
-        msg: "{{ kubesystem_events.stdout }}"
