@@ -56,7 +56,7 @@
     - name: Apply Argo CD application manifest
       template:
         src: templates/homelab_apps.yml
-        dest: {{ apps_yaml_path }}
+        dest: "{{ apps_yaml_path }}"
       environment: "{{ kubectl_env }}"
 
     - name: Apply Argo CD application manifest
