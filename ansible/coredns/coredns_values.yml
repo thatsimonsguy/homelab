@@ -11,8 +11,18 @@ podLabels:
   k8s-app: kube-dns
 
 # Ensure the selector matches the labels
-selector:
-  matchLabels:
-    app.kubernetes.io/name: coredns
-    app.kubernetes.io/instance: coredns
+podAnnotations: {}
+podSecurityContext: {}
+securityContext: {}
+affinity: {}
+nodeSelector: {}
+tolerations: []
+
+extraArgs: []
+extraEnvs: []
+resources: {}
+
+# Ensure metadata labels are set
+metadata:
+  labels:
     k8s-app: kube-dns

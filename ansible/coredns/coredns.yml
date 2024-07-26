@@ -69,3 +69,11 @@
     - name: Display CoreDNS pods status
       debug:
         msg: "{{ coredns_pods_status.stdout }}"
+
+    - name: Check for events in kube-system namespace
+      command: kubectl get events -n kube-system
+      register: kubesystem_events
+
+    - name: Display events in kube-system namespace
+      debug:
+        msg: "{{ kubesystem_events.stdout }}"
