@@ -1,0 +1,18 @@
+# coredns_values.yaml
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 53
+  targetPort: 53
+
+# Add required labels
+podLabels:
+  k8s-app: kube-dns
+
+# Ensure the selector matches the labels
+selector:
+  matchLabels:
+    app.kubernetes.io/name: coredns
+    app.kubernetes.io/instance: coredns
+    k8s-app: kube-dns

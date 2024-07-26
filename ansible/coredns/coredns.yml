@@ -51,15 +51,8 @@
       command: kubectl delete deployment coredns -n kube-system
       when: coredns_deployment.rc == 0
 
-    - name: Install or upgrade CoreDNS
-      command: helm upgrade --install coredns coredns/coredns --namespace kube-system --create-namespace
-
-    - name: Patch CoreDNS deployment to add required labels
-      command: >
-        kubectl patch deployment coredns -n kube-system
-        --type=json
-        -p='[{"op": "add", "path": "/spec/selector/matchLabels/k8s-app", "value": "kube-dns"},
-             {"op": "add", "path": "/spec/template/metadata/labels/k8s-app", "value": "kube-dns"}]'
+    - name: Install or upgrade CoreDNS with updated values
+      command: helm upgrade --install coredns coredns/coredns --namespace kube-system --create-namespace -f /coredns/coredns-values.yaml
 
     - name: Verify CoreDNS deployment
       command: kubectl get deployment coredns -n kube-system --show-labels
