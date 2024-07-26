@@ -29,17 +29,11 @@
         dest: /usr/local/bin/argocd
         mode: '0755'
 
-    - name: Set Argo CD API server to LoadBalancer
+    - name: Set Argo CD API server to NodePort
       command: >
-        kubectl patch svc argocd-server -n "{{ argocd_namespace }}" -p '{"spec": {"type": "LoadBalancer"}}'
+        kubectl patch svc argocd-server -n "{{ argocd_namespace }}" -p '{"spec": {"type": "NodePort"}}'
       environment: "{{ kubectl_env }}"
       ignore_errors: yes
-
-    - name: Port-forward Argo CD server for local access
-      command: kubectl port-forward svc/argocd-server -n "{{ argocd_namespace }}" 8080:443
-      async: 120
-      poll: 0
-      environment: "{{ kubectl_env }}"
 
     - name: Retrieve initial admin password
       shell: kubectl -n "{{ argocd_namespace }}" get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
@@ -49,3 +43,12 @@
     - name: Display initial admin password
       debug:
         msg: "Initial admin password: {{ initial_admin_password.stdout }}"
+
+    - name: Get NodePort
+      shell: kubectl get svc argocd-server -n "{{ argocd_namespace }}" -o jsonpath="{.spec.ports[?(@.port==443)].nodePort}"
+      register: nodeport
+      environment: "{{ kubectl_env }}"
+
+    - name: Display NodePort
+      debug:
+        msg: "Argo CD UI NodePort: {{ nodeport.stdout }}"
