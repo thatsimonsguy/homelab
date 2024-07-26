@@ -10,8 +10,8 @@
       namespace: default
       server: https://kubernetes.default.svc
     source:
-      repoURL: "{{ apps_repo_url }}"
-      path: "{{ apps_manifest_path }}"
+      repoURL: {{ apps_repo_url }}
+      path: {{ apps_manifest_path }}
       targetRevision: HEAD
     project: default
     syncPolicy:
