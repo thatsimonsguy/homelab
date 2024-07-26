@@ -12,6 +12,12 @@
       failed_when: helm_installed.rc != 0
       ignore_errors: yes
 
+    - name: Install Helm if not installed
+      apt:
+        name: helm
+        state: present
+      when: helm_installed.rc != 0
+
     - name: Add CoreDNS Helm repository
       command: helm repo add coredns https://coredns.github.io/helm
       register: helm_repo_added
@@ -49,7 +55,7 @@
       command: helm upgrade --install coredns coredns/coredns --namespace kube-system --create-namespace
 
     - name: Verify CoreDNS installation
-      command: kubectl get pods -n kube-system -l app.kubernetes.io/name=coredns
+      command: kubectl get pods -n kube-system -l k8s-app=kube-dns
       register: coredns_installed
 
     - name: Display CoreDNS installation status
