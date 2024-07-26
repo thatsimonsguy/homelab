@@ -54,5 +54,11 @@
         msg: "Argo CD UI NodePort: {{ nodeport.stdout }}"
 
     - name: Apply Argo CD application manifest
+      template:
+        src: templates/homelab_apps.yml
+        dest: {{ apps_yaml_path }}
+      environment: "{{ kubectl_env }}"
+
+    - name: Apply Argo CD application manifest
       command: kubectl apply -f {{ apps_yaml_path }}
       environment: "{{ kubectl_env }}"
