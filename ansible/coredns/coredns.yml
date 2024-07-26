@@ -1,4 +1,4 @@
-# ansible/install_coredns.yml
+# homelab/ansible/coredns/coredns.yml
 - hosts: local
   become: yes
   vars_files:
@@ -52,7 +52,7 @@
       when: coredns_deployment.rc == 0
 
     - name: Install or upgrade CoreDNS with updated values
-      command: helm upgrade --install coredns coredns/coredns --namespace kube-system --create-namespace -f /coredns/coredns-values.yml
+      command: helm upgrade --install coredns coredns/coredns --namespace kube-system --create-namespace -f {{ playbook_dir }}/coredns_values.yml
 
     - name: Verify CoreDNS deployment
       command: kubectl get deployment coredns -n kube-system --show-labels
