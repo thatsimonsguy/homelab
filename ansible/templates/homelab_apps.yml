@@ -13,6 +13,8 @@ spec:
     repoURL: "{{ apps_repo_url }}"
     path: "{{ apps_manifest_path }}"
     targetRevision: HEAD
+    directory:
+      recurse: true
   project: default
   syncPolicy:
     automated:
