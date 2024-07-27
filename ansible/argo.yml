@@ -53,7 +53,7 @@
       debug:
         msg: "Argo CD UI NodePort: {{ nodeport.stdout }}"
 
-    - name: Apply Argo CD application manifest
+    - name: Render Argo CD application manifest from template
       template:
         src: templates/homelab_apps.yml
         dest: "{{ apps_yaml_path }}"
