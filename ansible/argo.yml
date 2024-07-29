@@ -54,21 +54,11 @@
       debug:
         msg: "Argo CD UI NodePort: {{ nodeport.stdout }}"
 
-    - name: Create Sealed Secrets Namespace
-      kubernetes.core.k8s:
-        state: present
-        definition:
-          apiVersion: v1
-          kind: Namespace
-          metadata:
-            name: sealed-secrets
-
     - name: Install Sealed Secrets Controller
-      shell: kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.26.3/controller.yaml -n sealed-secrets
-      environment:
-        KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
+      shell: kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.26.3/controller.yaml
+      environment: "{{ kubectl_env }}"
 
-    - name: Inject Sealed Secrets Key
+    - name: Inject Sealed Secrets Key into kube-system namespace
       kubernetes.core.k8s:
         state: present
         definition:
@@ -76,11 +66,12 @@
           kind: Secret
           metadata:
             name: sealed-secrets-key
-            namespace: sealed-secrets
+            namespace: kube-system
           type: kubernetes.io/tls
           data:
             tls.crt: "{{ sealed_secrets_key.cert | b64encode }}"
             tls.key: "{{ sealed_secrets_key.key | b64encode }}"
+      environment: "{{ kubectl_env }}"
 
     - name: Render Argo CD application manifest from template
       template:
