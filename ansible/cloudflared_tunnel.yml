@@ -1,0 +1,27 @@
+# ansible/cloudflared_tunnel.yml
+---
+- hosts: local
+  become: yes
+  vars_files:
+    - secrets.yml
+
+  tasks:
+      - name: Download cloudflared package
+        ansible.builtin.get_url:
+          url: https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+          dest: /tmp/cloudflared.deb
+
+      - name: Install cloudflared package
+        ansible.builtin.apt:
+          deb: /tmp/cloudflared.deb
+          state: present
+
+      - name: Install cloudflared service
+        ansible.builtin.shell:
+          cmd: sudo cloudflared service install "{{ cloudflared_token }}"
+
+      - name: Ensure cloudflared service is started
+        ansible.builtin.service:
+          name: cloudflared
+          state: started
+          enabled: yes
