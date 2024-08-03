@@ -26,6 +26,15 @@
         mode: '0644'
       when: ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'RedHat'
 
+    - name: Delete Traefik HelmChart resource
+      command: kubectl -n kube-system delete helmcharts.helm.cattle.io traefik
+      ignore_errors: yes
+
+    - name: Stop K3s service
+      systemd:
+        name: k3s
+        state: stopped
+
     - name: Backup traefik.yaml
       copy:
         src: /var/lib/rancher/k3s/server/manifests/traefik.yaml
@@ -38,18 +47,15 @@
         path: /var/lib/rancher/k3s/server/manifests/traefik.yaml
         state: absent
 
-    - name: Stop K3s service
-      systemd:
-        name: k3s
-        state: stopped
-
-    - name: Disable Traefik in K3s configuration
+    - name: Edit K3s service to disable Traefik
       blockinfile:
-        path: /etc/rancher/k3s/k3s.yaml
+        path: /etc/systemd/system/k3s.service
         block: |
-          disable:
-            - traefik
-        create: yes
+          ExecStart=
+          ExecStart=/usr/local/bin/k3s server --no-deploy traefik
+
+    - name: Reload systemd daemon
+      command: systemctl daemon-reload
 
     - name: Start K3s service
       systemd:
