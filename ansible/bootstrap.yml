@@ -5,4 +5,6 @@
 - import_playbook: k3s.yml
 - import_playbook: helm.yml
 - import_playbook: coredns/coredns.yml
+- import_playbook: pihole_prereqs.yml
 - import_playbook: argo.yml
+- import_playbook: cloudflared_tunnel.yml
