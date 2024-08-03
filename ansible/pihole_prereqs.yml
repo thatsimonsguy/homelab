@@ -47,12 +47,23 @@
         path: /var/lib/rancher/k3s/server/manifests/traefik.yaml
         state: absent
 
-    - name: Edit K3s service to disable Traefik
-      blockinfile:
+    - name: Clear existing ExecStart lines
+      lineinfile:
         path: /etc/systemd/system/k3s.service
-        block: |
-          ExecStart=
-          ExecStart=/usr/local/bin/k3s server --no-deploy traefik
+        regexp: '^ExecStart='
+        state: absent
+
+    - name: Remove continuation ExecStart line
+      lineinfile:
+        path: /etc/systemd/system/k3s.service
+        regexp: '^\s+server\\$'
+        state: absent
+
+    - name: Add ExecStart line to disable Traefik
+      lineinfile:
+        path: /etc/systemd/system/k3s.service
+        insertafter: '^ExecStartPre=-/sbin/modprobe overlay'
+        line: 'ExecStart=/usr/local/bin/k3s server --no-deploy traefik'
 
     - name: Reload systemd daemon
       command: systemctl daemon-reload
