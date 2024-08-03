@@ -33,10 +33,9 @@
         remote_src: yes
       ignore_errors: yes
 
-    - name: Remove traefik.yaml
-      file:
-        path: /var/lib/rancher/k3s/server/manifests/traefik.yaml
-        state: absent
+    - name: Rename traefik.yaml to prevent re-creation
+      command: mv /var/lib/rancher/k3s/server/manifests/traefik.yaml /var/lib/rancher/k3s/server/manifests/traefik.yaml.bak
+      ignore_errors: yes
 
     - name: Restart K3s service
       systemd:
