@@ -25,12 +25,3 @@
         group: root
         mode: '0644'
       when: ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'RedHat'
-
-    - name: Delete Traefik HelmChart resource
-      command: kubectl -n kube-system delete helmcharts.helm.cattle.io traefik
-      ignore_errors: yes
-
-    - name: Stop K3s service
-      systemd:
-        name: k3s
-        state: stopped
