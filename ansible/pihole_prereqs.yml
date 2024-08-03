@@ -25,3 +25,20 @@
         group: root
         mode: '0644'
       when: ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'RedHat'
+
+    - name: Backup traefik.yaml
+      copy:
+        src: /var/lib/rancher/k3s/server/manifests/traefik.yaml
+        dest: /var/lib/rancher/k3s/server/manifests/traefik.yaml.backup
+        remote_src: yes
+      ignore_errors: yes
+
+    - name: Remove traefik.yaml
+      file:
+        path: /var/lib/rancher/k3s/server/manifests/traefik.yaml
+        state: absent
+
+    - name: Restart K3s service
+      systemd:
+        name: k3s
+        state: restarted
