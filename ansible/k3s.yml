@@ -61,3 +61,25 @@
         group: "{{ user }}"
         state: link
         force: yes
+
+    - name: Ensure the directory for systemd drop-ins exists
+      file:
+        path: /etc/systemd/system/k3s.service.d
+        state: directory
+        mode: '0755'
+
+    - name: Create systemd drop-in for K3s
+      copy:
+        dest: /etc/systemd/system/k3s.service.d/10-kube-proxy.conf
+        content: |
+          [Service]
+          ExecStart=
+          ExecStart=/usr/local/bin/k3s server --kube-proxy-arg=proxy-mode=ipvs --kube-proxy-arg=ipvs-strict-arp=true
+
+    - name: Reload systemd to apply the new configuration
+      command: systemctl daemon-reload
+
+    - name: Restart K3s to apply new kube-proxy settings
+      service:
+        name: k3s
+        state: restarted
