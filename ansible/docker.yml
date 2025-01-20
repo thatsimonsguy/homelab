@@ -25,13 +25,23 @@
 
     - name: Add Docker GPG key
       ansible.builtin.get_url:
-        url: https://download.docker.com/linux/ubuntu/gpg
+        url: https://download.docker.com/linux/debian/gpg
         dest: /etc/apt/keyrings/docker.gpg
         mode: '0644'
 
+    - name: Detect Debian release
+      command: cat /etc/os-release
+      register: os_release
+
+    - name: Extract Debian release version
+      set_fact:
+        debian_codename: "{{ item.split('=')[-1] }}"
+      with_items: "{{ os_release.stdout_lines }}"
+      when: item.startswith('VERSION_CODENAME=')
+
     - name: Add Docker APT repository
       apt_repository:
-        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ubuntu_release }} stable"
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian {{ debian_codename }} stable"
         state: present
         update_cache: yes
 
