@@ -23,9 +23,8 @@
         executable: /bin/bash
 
     - name: Install ansible-galaxy if not present
-      pip:
-        name: ansible
-        executable: pip3
+      apt:
+        name: python3-ansible
         state: present
 
     - name: Install the community.kubernetes collection
