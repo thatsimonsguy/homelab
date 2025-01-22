@@ -12,11 +12,12 @@ sudo apt update && sudo apt upgrade -y
 
 # Install essential packages
 echo "Installing essential packages..."
-sudo apt install -y curl gnupg git software-properties-common python3 python3-pip
+sudo apt install -y curl software-properties-common git
 
-# Install Ansible using pip (preferred for Debian to avoid PPA issues)
-echo "Installing Ansible..."
-sudo pip3 install ansible
+# Add Ansible PPA and install Ansible
+echo "Adding Ansible PPA and installing Ansible..."
+sudo add-apt-repository --yes --update ppa:ansible/ansible
+sudo apt install -y ansible
 
 # Verify Ansible installation
 ansible --version
@@ -27,9 +28,9 @@ fi
 
 echo "Ansible & Git installed successfully."
 
-# Detect the Debian codename
-DEBIAN_RELEASE=$(grep "VERSION_CODENAME" /etc/os-release | cut -d'=' -f2)
-export DEBIAN_RELEASE
+# Detect the Ubuntu release codename
+UBUNTU_RELEASE=$(lsb_release -cs)
+export UBUNTU_RELEASE
 
 # Clone the homelab repository
 HOMELAB_DIR="/home/oebus/homelab"
@@ -46,6 +47,6 @@ cd "$HOMELAB_DIR/ansible" || { echo "Failed to navigate to ansible directory. Ex
 
 # Run the Ansible playbook with the inventory file
 echo "Running Ansible playbook..."
-ansible-playbook -i inventory.ini bootstrap.yml --vault-password-file <(echo "$1") --extra-vars "debian_release=$DEBIAN_RELEASE"
+ansible-playbook -i inventory.ini bootstrap.yml --vault-password-file <(echo "$1") --extra-vars "ubuntu_release=$UBUNTU_RELEASE"
 
 echo "Bootstrapping complete."
