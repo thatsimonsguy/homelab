@@ -12,9 +12,9 @@
         state: present
 
     - name: Install kubernetes Python package
-      pip:
+      apt:
         name: python3-kubernetes
-        executable: pip3
+        state: present
 
     - name: Install k3s
       shell: |
