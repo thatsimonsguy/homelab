@@ -22,10 +22,11 @@
       args:
         executable: /bin/bash
 
-    - name: Install ansible-galaxy if not present
+    - name: Ensure Ansible is installed # goofy, since we're running this in ansible, but...
       apt:
-        name: python3-ansible
+        name: ansible
         state: present
+        update_cache: yes
 
     - name: Install the community.kubernetes collection
       ansible.builtin.command:
