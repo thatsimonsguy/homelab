@@ -13,7 +13,7 @@
 
     - name: Install kubernetes Python package
       pip:
-        name: kubernetes
+        name: python3-kubernetes
         executable: pip3
 
     - name: Install k3s
