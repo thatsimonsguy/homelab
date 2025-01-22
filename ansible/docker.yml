@@ -25,40 +25,19 @@
       command: lsb_release -cs
       register: ubuntu_codename
 
-    - name: Define fallback codenames
-      set_fact:
-        docker_codenames:
-          - "{{ ubuntu_codename.stdout }}"
-          - mantic      # Fallback #1
-          - jammy       # Fallback #2
-
-    - name: Attempt to add Docker apt repository with fallback
+    - name: Attempt to add Docker apt repository for current distro
       block:
-        - name: Add Docker apt repository
+          - name: Add Docker apt repository
+            apt_repository:
+              repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu {{ ubuntu_codename.stdout }} stable"
+              state: present
+              update_cache: yes
+      rescue:
+        - name: Use jammy as fallback
           apt_repository:
-            repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu {{ item }} stable"
+            repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu jammy stable"
             state: present
             update_cache: yes
-          register: docker_repo
-
-        - name: Debug success
-          debug:
-            msg: "Successfully added Docker repo using codename '{{ item }}'"
-
-        - name: Mark success so we skip subsequent codenames
-          set_fact:
-            docker_repo_added: true
-
-      rescue:
-        - name: Debug failure
-          debug:
-            msg: "Failed with codename '{{ item }}'; trying next fallback"
-
-      loop: "{{ docker_codenames }}"
-      loop_control:
-        label: "{{ item }}"
-      when: not docker_repo_added | default(false)
-      ignore_errors: true
 
     - name: Install Docker
       apt:
