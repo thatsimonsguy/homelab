@@ -4,42 +4,70 @@
   vars_files:
     - config.yml
   tasks:
-    - name: Ensure curl is installed
-      apt:
-        name: curl
-        state: present
-
-    - name: Install Docker dependencies
+    - name: Ensure needed packages are installed
       apt:
         name:
           - apt-transport-https
           - ca-certificates
-          - software-properties-common
+          - curl
+          - gnupg
+          - lsb-release
         state: present
+        update_cache: yes
 
-    - name: Create directory for Docker keyrings
-      file:
-        path: /etc/apt/keyrings
-        state: directory
-        mode: '0755'
+    - name: De-armoring Docker GPG key
+      shell: |
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor > /usr/share/keyrings/docker-archive-keyring.gpg
+      args:
+        creates: /usr/share/keyrings/docker-archive-keyring.gpg
 
-    - name: Add Docker GPG key
-      ansible.builtin.get_url:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        dest: /etc/apt/keyrings/docker.gpg
-        mode: '0644'
-
-    - name: Detect Ubuntu release
+    - name: Gather Ubuntu release codename
       command: lsb_release -cs
       register: ubuntu_codename
 
-    - name: Add Docker APT repository
-      apt_repository:
-        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{ ubuntu_codename.stdout }} stable"
-        state: present
-        update_cache: yes
+    - name: Define fallback codenames
+      set_fact:
+        docker_codenames:
+          - "{{ ubuntu_codename.stdout }}"
+          - mantic      # Fallback #1
+          - jammy       # Fallback #2
+
+    - name: Add Docker apt repo with fallback
+      block:
+          - name: Try Docker codenames in a loop
+            block:
+              - name: Add Docker apt repository
+                apt_repository:
+                  repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu {{ item }} stable"
+                  state: present
+                  update_cache: yes
+                register: docker_repo
+
+              - name: Debug success
+                debug:
+                  msg: "Successfully added Docker repo using codename '{{ item }}'"
+
+              - name: Mark success so we skip subsequent codenames
+                set_fact:
+                  docker_repo_added: true
+
+            rescue:
+              - name: Debug failure
+                debug:
+                  msg: "Failed with codename '{{ item }}'; trying next fallback"
+
+            loop: "{{ docker_codenames }}"
+            loop_control:
+              label: "{{ item }}"
+            when: not docker_repo_added | default(false)
+
+          - name: Fail if no codename was successful
+            fail:
+              msg: "Could not add Docker apt repo for any fallback codename."
+            when: not docker_repo_added | default(false)
 
     - name: Install Docker
       apt:
         name: docker-ce
+        update_cache: yes
         state: present
