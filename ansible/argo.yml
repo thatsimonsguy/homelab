@@ -30,6 +30,12 @@
         dest: /usr/local/bin/argocd
         mode: '0755'
 
+    - name: Download kubeseal CLI
+      get_url:
+        url: "https://github.com/bitnami-labs/sealed-secrets/releases/latest/download/kubeseal-linux-amd64"
+        dest: /usr/local/bin/kubeseal
+        mode: '0755'
+
     - name: Set Argo CD API server to NodePort
       command: >
         kubectl patch svc argocd-server -n "{{ argocd_namespace }}" -p '{"spec": {"type": "NodePort"}}'
