@@ -30,11 +30,16 @@
         dest: /usr/local/bin/argocd
         mode: '0755'
 
-    - name: Download kubeseal CLI
-      get_url:
-        url: "https://github.com/bitnami-labs/sealed-secrets/releases/latest/download/kubeseal-linux-amd64"
-        dest: /usr/local/bin/kubeseal
-        mode: '0755'
+    - name: Ensure Snap is installed
+      apt:
+        name: snapd
+        state: present
+
+    - name: Install kubeseal CLI via Snap
+      snap:
+        name: sealed-secrets-kubeseal-nsg
+        state: present
+        classic: false
 
     - name: Set Argo CD API server to NodePort
       command: >
