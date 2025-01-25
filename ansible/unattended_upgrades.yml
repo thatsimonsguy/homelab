@@ -1,0 +1,32 @@
+- hosts: all
+  become: yes
+  tasks:
+    - name: Install the unattended-upgrades package
+      apt:
+        name: unattended-upgrades
+        state: present
+        update_cache: yes
+
+    - name: Enable unattended-upgrades
+      copy:
+        dest: /etc/apt/apt.conf.d/20auto-upgrades
+        content: |
+          APT::Periodic::Update-Package-Lists "1";
+          APT::Periodic::Unattended-Upgrade "1";
+
+    - name: Configure unattended-upgrades
+      copy:
+        dest: /etc/apt/apt.conf.d/50unattended-upgrades
+        content: |
+          Unattended-Upgrade::Allowed-Origins {
+            "${distro_id}:${distro_codename}-security";
+          };
+          Unattended-Upgrade::Package-Blacklist {
+          };
+          Unattended-Upgrade::Automatic-Reboot "true";
+          Unattended-Upgrade::Automatic-Reboot-Time "04:00";
+
+    - name: Restart the unattended-upgrades service
+      service:
+        name: unattended-upgrades
+        state: restarted
