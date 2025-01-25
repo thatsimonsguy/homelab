@@ -44,3 +44,38 @@
         name: docker-ce
         update_cache: yes
         state: present
+
+    - name: Add the current user to the docker group
+      user:
+        name: "{{ ansible_user_id }}"
+        groups: docker
+        append: yes
+
+    - name: Create /etc/docker directory if it doesn't exist
+      file:
+        path: /etc/docker
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Configure Docker logging defaults
+      copy:
+        dest: /etc/docker/daemon.json
+        content: |
+          {
+            "log-driver": "json-file",
+            "log-opts": {
+              "max-size": "10m",
+              "max-file": "3"
+            }
+          }
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restart Docker service
+      systemd:
+        name: docker
+        state: restarted
+        daemon_reload: yes
