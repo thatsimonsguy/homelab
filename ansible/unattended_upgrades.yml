@@ -24,7 +24,7 @@
           Unattended-Upgrade::Package-Blacklist {
           };
           Unattended-Upgrade::Automatic-Reboot "true";
-          Unattended-Upgrade::Automatic-Reboot-Time "04:00";
+          Unattended-Upgrade::Automatic-Reboot-Time "10:00";
 
     - name: Restart the unattended-upgrades service
       service:
