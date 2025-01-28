@@ -22,11 +22,6 @@
       args:
         executable: /bin/bash
 
-    - name: Apply custom StorageClass from file
-      kubernetes.core.k8s:
-        state: present
-        src: retain_default_storageclass.yaml
-
     - name: Ensure Ansible is installed # goofy, since we're running this in ansible, but...
       apt:
         name: ansible
@@ -89,3 +84,9 @@
       service:
         name: k3s
         state: restarted
+
+    - name: Apply custom StorageClass from file
+      kubernetes.core.k8s:
+        state: present
+        src: retain_default_storageclass.yaml
+        kubeconfig: "{{ kubeconfig_target_path }}"
