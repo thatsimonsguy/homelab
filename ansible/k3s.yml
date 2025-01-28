@@ -77,11 +77,6 @@
           ExecStart=
           ExecStart=/usr/local/bin/k3s server --kube-proxy-arg=proxy-mode=ipvs --kube-proxy-arg=ipvs-strict-arp=true
 
-    - name: Apply custom StorageClass from file
-      kubernetes.core.k8s:
-        state: present
-        src: retain_default_storageclass.yaml
-
     - name: Reload systemd to apply the new configuration
       command: systemctl daemon-reload
 
@@ -89,3 +84,8 @@
       service:
         name: k3s
         state: restarted
+
+    - name: Apply custom StorageClass from file
+      kubernetes.core.k8s:
+        state: present
+        src: retain_default_storageclass.yaml
