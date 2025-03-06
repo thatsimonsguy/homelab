@@ -78,6 +78,8 @@
           metadata:
             name: sealed-secrets-key
             namespace: kube-system
+            labels:
+              sealedsecrets.bitnami.com/sealed-secrets-key: active
           type: kubernetes.io/tls
           data:
             tls.crt: "{{ sealed_secrets_key.cert | b64encode }}"
