@@ -77,20 +77,19 @@
           ExecStart=
           ExecStart=/usr/local/bin/k3s server --kube-proxy-arg=proxy-mode=ipvs --kube-proxy-arg=ipvs-strict-arp=true
 
-    - name: Ensure containerd registry configuration directory exists
-      file:
-        path: /var/lib/rancher/k3s/agent/etc/containerd/
-        state: directory
-        mode: '0755'
-
-    - name: Configure containerd to use insecure local registry
+    - name: Map insecure local registry
       copy:
-        dest: /var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl
+        dest: /etc/rancher/k3s/registries.yaml
         content: |
-          [plugins."io.containerd.grpc.v1.cri".registry]
-            [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-              [plugins."io.containerd.grpc.v1.cri".registry.mirrors."192.168.2.17:5000"]
-                endpoint = ["http://192.168.2.17:5000"]
+          mirrors:
+            "192.168.2.17:5000":
+              endpoint:
+                - "http://192.168.2.17:5000"
+
+          configs:
+            "192.168.2.17:5000":
+              tls:
+                insecure_skip_verify: true
         mode: '0644'
 
     - name: Reload systemd to apply the new configuration
