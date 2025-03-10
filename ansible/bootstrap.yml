@@ -8,4 +8,5 @@
 - import_playbook: pihole_prereqs.yml
 - import_playbook: argo.yml
 - import_playbook: cloudflared_tunnel.yml
+- import_playbook: plex_server.yml
 - import_playbook: unattended_upgrades.yml

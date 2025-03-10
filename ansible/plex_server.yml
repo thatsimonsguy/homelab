@@ -1,0 +1,56 @@
+---
+- name: Deploy Plex with Docker Compose
+  hosts: local
+  become: true
+  vars_files:
+    - config.yml
+
+  tasks:
+    - name: Ensure Docker is installed
+      package:
+        name: docker
+        state: present
+
+    - name: Ensure Docker Compose is installed
+      package:
+        name: docker-compose
+        state: present
+
+    - name: Create directory for Docker Compose file
+      file:
+        path: "{{ compose_file_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Copy docker-compose.yml to the host
+      copy:
+        dest: "{{ compose_file_dir }}/docker-compose.yml"
+        mode: '0644'
+        content: |
+          version: "3.7"
+          services:
+            plex:
+              image: plexinc/pms-docker:latest
+              container_name: plex
+              ports:
+                - "32400:32400/tcp"
+                - "3005:3005/tcp"
+                - "8324:8324/tcp"
+                - "32410:32410/udp"
+                - "32412:32412/udp"
+                - "32413:32413/udp"
+                - "32414:32414/udp"
+              environment:
+                - PLEX_UID={{ plex_uid }}
+                - PLEX_GID={{ plex_gid }}
+              volumes:
+                - "{{ plex_config_path }}:/config"
+                - "{{ plex_tv_path }}:/data/tvshows"
+                - "{{ plex_movie_path }}:/data/movies"
+              restart: unless-stopped
+
+    - name: Start Plex stack
+      community.docker.docker_compose:
+        project_src: "{{ compose_file_dir }}"
+        state: present
+        restarted: true

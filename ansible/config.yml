@@ -8,3 +8,9 @@ kubeconfig_target_path: /home/oebus/.kube/config
 apps_yaml_path: /home/oebus/homelab/homelab_apps.yaml
 apps_repo_url: https://github.com/thatsimonsguy/homelab-k8s.git
 apps_manifest_path: argo-manifests
+plex_uid: "1000"
+plex_gid: "1000"
+plex_config_path: "/mnt/nas/plex_server_config"
+plex_tv_path: "/mnt/nas/tv"
+plex_movie_path: "/mnt/nas/movies"
+compose_file_dir: "/opt/plex"
