@@ -6,11 +6,6 @@
     - config.yml
 
   tasks:
-    - name: Ensure Docker is installed
-      package:
-        name: docker
-        state: present
-
     - name: Ensure Docker Compose is installed
       package:
         name: docker-compose
