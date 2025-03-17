@@ -100,8 +100,14 @@
         name: k3s
         state: restarted
 
-    - name: Apply custom StorageClass from file
+    - name: Apply default retain storage class
       kubernetes.core.k8s:
         state: present
         src: retain_default_storageclass.yaml
+        kubeconfig: "{{ kubeconfig_target_path }}"
+
+    - name: Apply NAS config storage class
+      kubernetes.core.k8s:
+        state: present
+        src: /tmp/k8s-manifests/storageclass-nas.yaml
         kubeconfig: "{{ kubeconfig_target_path }}"
