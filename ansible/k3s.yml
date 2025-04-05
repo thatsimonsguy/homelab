@@ -109,5 +109,5 @@
     - name: Apply NAS config storage class
       kubernetes.core.k8s:
         state: present
-        src: /tmp/k8s-manifests/storageclass-nas.yaml
+        src: nas_config_storageclass.yaml
         kubeconfig: "{{ kubeconfig_target_path }}"
