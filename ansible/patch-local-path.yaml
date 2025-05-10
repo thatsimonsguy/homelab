@@ -1,5 +1,5 @@
 - name: Ensure patch script exists and is executable
-  hosts: k3s
+  hosts: local
   become: yes
   tasks:
     - name: Copy local-path-config patch script from template
