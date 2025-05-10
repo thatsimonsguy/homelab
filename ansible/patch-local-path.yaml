@@ -2,6 +2,13 @@
   hosts: local
   become: yes
   tasks:
+    - name: Copy local-path patch JSON
+      copy:
+        src: files/local-path-patch.json
+        dest: /usr/local/share/local-path-patch.json
+        mode: '0644'
+        owner: root
+        group: root
     - name: Copy local-path-config patch script from template
       copy:
         src: files/k3s-local-path-fix.sh
