@@ -1,5 +1,3 @@
-# homelab/ansible/files/k3s-local-path-fix.sh
-
 #!/bin/bash
 
 echo "Waiting for K3s API to be available..."
