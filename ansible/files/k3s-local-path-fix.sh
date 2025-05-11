@@ -3,8 +3,10 @@
 TARGET_PATH="/mnt/nas/k8sconfig"
 PATCH_FILE="/usr/local/share/local-path-patch.json"
 
-echo "Waiting for K3s API to be available..."
-until kubectl get nodes &>/dev/null; do sleep 1; done
+echo "Waiting for local-path-provisioner pod to be Ready..."
+until kubectl -n kube-system get pods -l app=local-path-provisioner -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' 2>/dev/null | grep -q True; do
+  sleep 1
+done
 
 attempt=1
 max_attempts=15
