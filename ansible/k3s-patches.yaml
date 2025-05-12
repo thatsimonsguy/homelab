@@ -17,7 +17,7 @@
         owner: root
         group: root
 
-    - name: Install systemd unit for patch script
+    - name: Install systemd unit for local path patch script
       copy:
         dest: /etc/systemd/system/k3s-local-path-fix.service
         mode: '0644'
@@ -40,5 +40,37 @@
     - name: Enable and start patch service
       systemd:
         name: k3s-local-path-fix.service
+        enabled: yes
+        state: started
+
+    - name: Copy Traefik patch script to target node
+      copy:
+        src: files/patch-traefik-service.sh
+        dest: /usr/local/bin/patch-traefik-service.sh
+        mode: '0755'
+
+    - name: Install systemd unit for traefik patch script
+      copy:
+        dest: /etc/systemd/system/k3s-patch-traefik.service
+        mode: '0644'
+        owner: root
+        group: root
+        content: |
+          [Unit]
+          Description=Patch baked-in Traefik to use static MetalLB IP
+          After=network-online.target k3s.service
+          Wants=network-online.target
+
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/local/bin/patch-traefik-service.sh
+          RemainAfterExit=true
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Enable and start patch service
+      systemd:
+        name: k3s-patch-traefik.service 
         enabled: yes
         state: started
