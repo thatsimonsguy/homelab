@@ -1,0 +1,66 @@
+# ansible/nvidia.yml
+# Installs NVIDIA Container Toolkit and configures k3s containerd to use the nvidia runtime.
+# Prerequisites: NVIDIA drivers must be installed before running this playbook.
+#   Ubuntu: sudo ubuntu-drivers autoinstall && sudo reboot
+# Supports multiple GPUs automatically via the nvidia-device-plugin (deployed by Argo).
+---
+- hosts: local
+  become: yes
+  tasks:
+    - name: Assert NVIDIA drivers are installed
+      command: nvidia-smi
+      changed_when: false
+      failed_when: false
+      register: nvidia_smi
+
+    - name: Fail if NVIDIA drivers not found
+      fail:
+        msg: |
+          NVIDIA drivers are not installed or nvidia-smi is not in PATH.
+          Install drivers first: sudo ubuntu-drivers autoinstall && sudo reboot
+          Then re-run bootstrap.
+      when: nvidia_smi.rc != 0
+
+    - name: Download NVIDIA Container Toolkit GPG key
+      get_url:
+        url: https://nvidia.github.io/libnvidia-container/gpgkey
+        dest: /tmp/nvidia-container-toolkit-gpgkey
+        mode: '0644'
+
+    - name: Dearmor NVIDIA GPG key
+      shell: |
+        gpg --dearmor < /tmp/nvidia-container-toolkit-gpgkey > /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+      args:
+        creates: /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+
+    - name: Add NVIDIA Container Toolkit apt repository
+      apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://nvidia.github.io/libnvidia-container/stable/deb/$(ARCH) /"
+        filename: nvidia-container-toolkit
+        state: present
+        update_cache: yes
+
+    - name: Install NVIDIA Container Toolkit
+      apt:
+        name: nvidia-container-toolkit
+        state: present
+        update_cache: yes
+
+    - name: Ensure k3s containerd config directory exists
+      file:
+        path: /var/lib/rancher/k3s/agent/etc/containerd
+        state: directory
+        mode: '0755'
+
+    - name: Configure containerd to use NVIDIA runtime for k3s
+      command: >
+        nvidia-ctk runtime configure
+        --runtime=containerd
+        --config=/var/lib/rancher/k3s/agent/etc/containerd/config.toml
+        --set-as-default
+      changed_when: true
+
+    - name: Restart k3s to apply containerd runtime changes
+      systemd:
+        name: k3s
+        state: restarted
