@@ -8,6 +8,7 @@
   vars:
     argocd_namespace: argocd
     argocd_install_url: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+    sealed_secrets_version: "0.36.1"
 
   tasks:
     - name: Ensure KUBECONFIG is set
@@ -30,16 +31,19 @@
         dest: /usr/local/bin/argocd
         mode: '0755'
 
-    - name: Ensure Snap is installed
-      apt:
-        name: snapd
-        state: present
+    - name: Download kubeseal CLI tarball
+      get_url:
+        url: "https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ sealed_secrets_version }}/kubeseal-{{ sealed_secrets_version }}-linux-amd64.tar.gz"
+        dest: "/tmp/kubeseal-{{ sealed_secrets_version }}-linux-amd64.tar.gz"
 
-    - name: Install kubeseal CLI via Snap
-      snap:
-        name: sealed-secrets-kubeseal-nsg
-        state: present
-        classic: false
+    - name: Extract kubeseal binary
+      unarchive:
+        src: "/tmp/kubeseal-{{ sealed_secrets_version }}-linux-amd64.tar.gz"
+        dest: /usr/local/bin
+        includes:
+          - kubeseal
+        remote_src: yes
+        mode: '0755'
 
     - name: Set Argo CD API server to NodePort
       command: >
@@ -66,7 +70,7 @@
         msg: "Argo CD UI NodePort: {{ nodeport.stdout }}"
 
     - name: Install Sealed Secrets Controller
-      shell: kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.26.3/controller.yaml
+      shell: "kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ sealed_secrets_version }}/controller.yaml"
       environment: "{{ kubectl_env }}"
 
     - name: Inject Sealed Secrets Key into kube-system namespace
