@@ -1,0 +1,48 @@
+# ansible/ssh.yml
+# Ensures OpenSSH server is installed, running, and authorized keys are configured.
+# Runs first in the bootstrap chain so the host is remotely accessible ASAP.
+# Authorized keys are pulled from GitHub (github.com/<github_user>.keys) so no
+# key material lives in this repo. Add keys to your GitHub account to grant access.
+---
+- hosts: local
+  become: yes
+  vars_files:
+    - config.yml
+  tasks:
+    - name: Install OpenSSH server
+      apt:
+        name: openssh-server
+        state: present
+        update_cache: yes
+
+    - name: Ensure sshd is enabled and running
+      systemd:
+        name: ssh
+        enabled: yes
+        state: started
+
+    - name: Ensure .ssh directory exists for user
+      file:
+        path: "/home/{{ user }}/.ssh"
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0700'
+
+    - name: Import authorized keys from GitHub
+      ansible.posix.authorized_key:
+        user: "{{ user }}"
+        state: present
+        key: "https://github.com/{{ github_user }}.keys"
+
+    - name: Disable password authentication
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+
+    - name: Reload sshd to apply config changes
+      systemd:
+        name: ssh
+        state: reloaded
