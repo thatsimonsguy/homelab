@@ -60,6 +60,38 @@
         --set-as-default
       changed_when: true
 
+    - name: Ensure /etc/cdi directory exists
+      file:
+        path: /etc/cdi
+        state: directory
+        mode: '0755'
+
+    - name: Generate CDI spec for NVIDIA GPUs
+      command: nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
+      changed_when: true
+
+    - name: Install nvidia-cdi-generate service to regenerate CDI spec on boot
+      copy:
+        dest: /etc/systemd/system/nvidia-cdi-generate.service
+        content: |
+          [Unit]
+          Description=Generate NVIDIA CDI spec
+          After=multi-user.target
+
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/bin/nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
+          RemainAfterExit=yes
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Enable nvidia-cdi-generate service
+      systemd:
+        name: nvidia-cdi-generate
+        enabled: yes
+        daemon_reload: yes
+
     - name: Restart k3s to apply containerd runtime changes
       systemd:
         name: k3s
