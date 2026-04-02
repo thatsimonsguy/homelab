@@ -69,13 +69,21 @@
         state: directory
         mode: '0755'
 
-    - name: Create systemd drop-in for K3s
+    - name: Create systemd drop-in for K3s IPVS and servicelb
       copy:
         dest: /etc/systemd/system/k3s.service.d/10-kube-proxy.conf
         content: |
           [Service]
           ExecStart=
           ExecStart=/usr/local/bin/k3s server --disable servicelb --kube-proxy-arg=proxy-mode=ipvs --kube-proxy-arg=ipvs-strict-arp=true
+
+    - name: Create systemd drop-in to order k3s after NAS mount
+      copy:
+        dest: /etc/systemd/system/k3s.service.d/05-nas-dependency.conf
+        content: |
+          [Unit]
+          Requires=mnt-nas.mount
+          After=mnt-nas.mount
 
     - name: Map insecure local registry
       copy:

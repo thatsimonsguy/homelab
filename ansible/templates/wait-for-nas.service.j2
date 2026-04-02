@@ -1,0 +1,14 @@
+[Unit]
+Description=Wait for NAS to be reachable then mount
+After=network-online.target
+Requires=network-online.target
+Before=mnt-nas.mount
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/bash -c 'until /usr/bin/timeout 2 bash -c "echo > /dev/tcp/{{ nas_server }}/445" 2>/dev/null; do echo "Waiting for NAS at {{ nas_server }}:445..."; sleep 5; done'
+TimeoutStartSec=300
+
+[Install]
+WantedBy=mnt-nas.mount
