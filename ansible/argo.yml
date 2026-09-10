@@ -73,6 +73,18 @@
       shell: "kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ sealed_secrets_version }}/controller.yaml"
       environment: "{{ kubectl_env }}"
 
+    # AGG-377 (2026-09-10): the controller no longer rotates its signing key.
+    # Rotation grew the key set to 19 while the vault held only the original,
+    # which would have left every later-sealed secret unrecoverable on a
+    # rebuild. The full key set was exported once into the vault; with the
+    # renewal period at 0 that export stays complete. To restore, apply the
+    # vaulted key secrets into kube-system BEFORE this controller starts.
+    - name: Freeze Sealed Secrets key renewal
+      shell: >-
+        kubectl -n kube-system patch deployment sealed-secrets-controller --type=json
+        -p='[{"op":"add","path":"/spec/template/spec/containers/0/args","value":["--key-renew-period=0"]}]'
+      environment: "{{ kubectl_env }}"
+
     - name: Inject Sealed Secrets Key into kube-system namespace
       kubernetes.core.k8s:
         state: present
